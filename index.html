@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>PIXEL RUSH</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#080c1a;color:white;
+ font-family:monospace;overflow:hidden;touch-action:none
+}
+canvas{
+ display:block;width:100vw;height:100vh;
+ image-rendering:pixelated
+}
+button{
+ font-family:monospace;font-weight:bold;
+ font-size:17px;padding:13px 18px;
+ border:3px solid white;border-radius:10px;
+ background:#7045ff;color:white;
+ box-shadow:0 5px 0 #392080;
+ cursor:pointer
+}
+button:active{transform:translateY(3px)}
+#menu{
+ position:fixed;inset:0;display:flex;
+ align-items:center;justify-content:center;
+ background:#080c1add;text-align:center;z-index:20
+}
+.panel{
+ width:min(92%,430px);padding:24px;
+ background:#131d39;border:4px solid #7655ff;
+ border-radius:18px;box-shadow:0 0 30px #7655ff55
+}
+h1{font-size:38px;color:#53edff;text-shadow:4px 4px #7045ff;margin:0 0 10px}
+h2{color:#ffd65a;margin:8px 0}
+p{color:#d0dcff;line-height:1.6}
+.menuBtns{display:grid;gap:12px;margin-top:20px}
+#hud{
+ position:fixed;top:12px;left:12px;
+ font-size:16px;line-height:1.7;
+ text-shadow:2px 2px black;pointer-events:none;z-index:5
+}
+#pause{
+ position:fixed;top:12px;right:12px;padding:8px 14px;z-index:5
+}
+.controls{
+ position:fixed;bottom:18px;left:14px;right:14px;
+ display:none;justify-content:space-between;
+ align-items:end;pointer-events:none;z-index:5
+}
+.controlGroup{display:flex;gap:10px}
+.ctrl{
+ width:68px;height:68px;border-radius:50%;
+ background:#7250ffbb;padding:0;font-size:24px;
+ pointer-events:auto;touch-action:none
+}
+#jumpBtn{background:#00bfeabb}
+.small{font-size:12px;color:#91a5d9}
+
+/* --- BLOCK CODING UI --- */
+#codeEditor{
+ position:fixed;top:0;right:0;bottom:0;
+ width:min(360px, 46vw);
+ background:#101730f2;
+ border-left:4px solid #7655ff;
+ display:none;flex-direction:column;
+ padding:12px;z-index:10;
+ box-shadow:-8px 0 25px #00000088;
+ touch-action:auto;
+}
+.codeHeader{
+ display:flex;justify-content:space-between;align-items:center;
+ border-bottom:2px solid #2b396b;padding-bottom:8px;margin-bottom:8px;
+}
+.codeHeader span{font-weight:bold;color:#53edff;font-size:15px}
+.palette{
+ display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;
+}
+.palBtn{
+ font-size:12px;padding:8px 6px;border-width:2px;border-radius:8px;
+ box-shadow:0 3px 0 #00000066;text-align:center;
+}
+.b-move{background:#2d7ff9;border-color:#8ec0ff}
+.b-jump{background:#00b894;border-color:#7bed9f}
+.b-wait{background:#e17055;border-color:#fab1a0}
+.b-loop{background:#f39c12;border-color:#ffeaa7;color:#111}
+.b-all{background:#8e44ad;border-color:#d2b4de}
+.workspace{
+ flex:1;overflow-y:auto;background:#080c1a;
+ border:2px solid #2b396b;border-radius:10px;padding:8px;
+ display:flex;flex-direction:column;gap:6px;
+}
+.hatBlock{
+ background:#ff9f1a;color:#111;font-weight:bold;
+ padding:7px 10px;border-radius:12px 12px 4px 4px;
+ font-size:13px;border:2px solid #fff;
+}
+.codeBlock{
+ padding:7px 8px;border-radius:6px;font-size:12px;font-weight:bold;
+ display:flex;flex-direction:column;gap:5px;border:2px solid #ffffffaa;
+ transition:transform 0.1s, box-shadow 0.1s;
+}
+.codeBlock.active{
+ outline:3px solid #ffe600;
+ box-shadow:0 0 14px #ffe600;
+ transform:scale(1.02);
+}
+.blockRow{
+ display:flex;align-items:center;justify-content:space-between;gap:4px;
+}
+.blockRow input{
+ width:44px;background:#080c1a;color:white;border:1px solid white;
+ border-radius:4px;padding:2px 4px;font-family:monospace;font-weight:bold;
+ text-align:center;font-size:12px;
+}
+.miniBtns{display:flex;gap:3px}
+.miniBtn{
+ padding:2px 6px;font-size:11px;border-width:1px;border-radius:4px;
+ box-shadow:none;background:#00000055;
+}
+.containerBody{
+ margin-left:10px;padding-left:8px;border-left:3px dashed #ffffff88;
+ display:flex;flex-direction:column;gap:4px;
+}
+.addChildRow{
+ display:flex;flex-wrap:wrap;gap:3px;margin-top:2px;
+}
+.addChildBtn{
+ padding:3px 5px;font-size:10px;border-width:1px;border-radius:4px;
+ box-shadow:none;background:#ffffff22;
+}
+.runBar{
+ display:grid;grid-template-columns:2fr 1fr 1fr;gap:6px;margin-top:10px;
+}
+.runBtn{background:#00d26a;color:#080c1a;padding:10px 6px;font-size:14px}
+.stopBtn{background:#ff4757;padding:10px 6px;font-size:13px}
+.clearBtn{background:#57606f;padding:10px 6px;font-size:13px}
+
+@media (max-width: 650px){
+ #codeEditor{
+  top:auto;left:0;right:0;bottom:0;
+  width:100vw;height:48vh;
+  border-left:none;border-top:4px solid #7655ff;
+ }
+}
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="hud" style="display:none">
+ SCORE: <span id="score">0</span><br>
+ COINS: <span id="coins">0</span><br>
+ LEVEL: <span id="levelDisplay">1</span><br>
+ <span id="bestRow">BEST: <span id="best">0</span></span>
+</div>
+
+<button id="pause" style="display:none">Ⅱ</button>
+
+<div class="controls" id="controls">
+ <div class="controlGroup">
+  <button class="ctrl" id="leftBtn">◀</button>
+  <button class="ctrl" id="rightBtn">▶</button>
+ </div>
+ <button class="ctrl" id="jumpBtn">⬆</button>
+</div>
+
+<!-- BLOCK CODING SIDEBAR -->
+<div id="codeEditor">
+ <div class="codeHeader">
+  <span>🧩 BLOCK CODER</span>
+  <button class="miniBtn" style="padding:4px 8px" onclick="mainMenu()">MENU</button>
+ </div>
+ <div class="palette">
+  <button class="palBtn b-move" onclick="addBlock('right')">+ Move Right</button>
+  <button class="palBtn b-move" onclick="addBlock('left')">+ Move Left</button>
+  <button class="palBtn b-jump" onclick="addBlock('jump')">+ Jump</button>
+  <button class="palBtn b-wait" onclick="addBlock('wait')">+ Wait</button>
+  <button class="palBtn b-all" onclick="addBlock('all')">⚡ All At Once</button>
+  <button class="palBtn b-loop" onclick="addBlock('loop')">🔁 Repeat Loop</button>
+ </div>
+ <div class="workspace" id="workspace"></div>
+ <div class="runBar">
+  <button class="runBtn" id="runCodeBtn" onclick="startCodeExecution()">▶ RUN</button>
+  <button class="stopBtn" onclick="stopCodeExecution()">■ STOP</button>
+  <button class="clearBtn" onclick="clearBlocks()">CLR</button>
+ </div>
+</div>
+
+<div id="menu">
+ <div class="panel" id="panel"></div>
+</div>
+
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+const menu=document.getElementById("menu");
+const panel=document.getElementById("panel");
+const hud=document.getElementById("hud");
+const controls=document.getElementById("controls");
+const codeEditor=document.getElementById("codeEditor");
+const workspace=document.getElementById("workspace");
+
+let W,H,groundY;
+let mode="menu";
+let running=false;
+let paused=false;
+let frame=0;
+let score=0;
+let coins=0;
+let level=1;
+let speed=6;
+let cameraX=0;
+let worldLength=4500;
+let goalX=0;
+
+let player;
+let platforms=[];
+let enemies=[];
+let coinList=[];
+let obstacles=[];
+let particles=[];
+let clouds=[];
+
+let keys={left:false,right:false};
+
+/* --- SAVE SYSTEM --- */
+let saveData = {
+ bestRun: 0,
+ platformerLevel: 1,
+ codingLevel: 1,
+ totalCoins: 0,
+ savedBlocks: null
+};
+
+function loadProgress(){
+ try{
+  const raw = localStorage.getItem("pixelRushSave");
+  if(raw){
+   const parsed = JSON.parse(raw);
+   saveData = {...saveData, ...parsed};
+  }else{
+   const oldBest = Number(localStorage.getItem("pixelRushRun") || 0);
+   if(oldBest > 0) saveData.bestRun = oldBest;
+  }
+ }catch(e){}
+}
+
+function saveProgress(){
+ try{
+  localStorage.setItem("pixelRushSave", JSON.stringify(saveData));
+ }catch(e){}
+}
+
+function resetAllSaveData(){
+ localStorage.removeItem("pixelRushSave");
+ localStorage.removeItem("pixelRushRun");
+ saveData = {
+  bestRun: 0,
+  platformerLevel: 1,
+  codingLevel: 1,
+  totalCoins: 0,
+  savedBlocks: null
+ };
+ programBlocks = [];
+ mainMenu();
+}
+
+loadProgress();
+
+/* --- BLOCK CODING STATE --- */
+let programBlocks=[];
+let codeRunning=false;
+let execQueue=[];
+let currentTask=null;
+let activeBlockIds=new Set();
+let blockIdCounter=1;
+
+if(Array.isArray(saveData.savedBlocks)){
+ programBlocks = saveData.savedBlocks;
+ let maxId = 0;
+ programBlocks.forEach(b => {
+  if(b.id > maxId) maxId = b.id;
+  if(b.children) b.children.forEach(c => { if(c.id > maxId) maxId = c.id; });
+ });
+ blockIdCounter = maxId + 1;
+}
+
+function resize(){
+ W=canvas.width=window.innerWidth;
+ H=canvas.height=window.innerHeight;
+ groundY=(mode==="coding"&&W<=650)?H*0.44:H*0.78;
+}
+window.addEventListener("resize",resize);
+resize();
+
+function rand(a,b){
+ return a+Math.random()*(b-a);
+}
+
+function resetPlayer(){
+ player={
+  x:70,
+  y:groundY-42,
+  w:30,
+  h:40,
+  vx:0,
+  vy:0,
+  grounded:false,
+  jumps:0
+ };
+}
+
+function startGame(selectedMode, customLevel=null){
+ mode=selectedMode;
+ resize();
+ running=true;
+ paused=false;
+ frame=0;
+ score=0;
+ coins=saveData.totalCoins;
+ speed=6;
+ cameraX=0;
+
+ obstacles=[];
+ enemies=[];
+ coinList=[];
+ particles=[];
+ stopCodeExecution(false);
+
+ if(mode==="platformer"){
+  level = customLevel || saveData.platformerLevel || 1;
+  generateLevel();
+ }else if(mode==="coding"){
+  level = customLevel || saveData.codingLevel || 1;
+  generateCodingLevel();
+  if(programBlocks.length===0) loadStarterBlocks();
+ }else{
+  level = 1;
+  platforms=[];
+ }
+
+ resetPlayer();
+
+ clouds=[];
+ for(let i=0;i<12;i++){
+  clouds.push({
+   x:rand(0,W*2),
+   y:rand(30,groundY*0.5),
+   s:rand(25,65)
+  });
+ }
+
+ menu.style.display="none";
+ hud.style.display="block";
+
+ if(mode==="coding"){
+  controls.style.display="none";
+  document.getElementById("pause").style.display="none";
+  document.getElementById("bestRow").style.display="none";
+  codeEditor.style.display="flex";
+  renderBlocks();
+ }else{
+  controls.style.display="flex";
+  document.getElementById("pause").style.display="block";
+  document.getElementById("pause").textContent="Ⅱ";
+  document.getElementById("bestRow").style.display="inline";
+  codeEditor.style.display="none";
+ }
+}
+
+function generateCodingLevel(){
+ platforms=[];
+ enemies=[];
+ coinList=[];
+ cameraX=0;
+
+ if(level===1){
+  worldLength=1100;
+  goalX=820;
+  platforms.push({x:0,y:groundY,w:340,h:200,type:"ground"});
+  platforms.push({x:420,y:groundY,w:500,h:200,type:"ground"});
+  coinList.push({x:220,y:groundY-30,r:9,taken:false});
+  coinList.push({x:380,y:groundY-85,r:9,taken:false});
+  coinList.push({x:600,y:groundY-30,r:9,taken:false});
+ }else if(level===2){
+  worldLength=1300;
+  goalX=980;
+  platforms.push({x:0,y:groundY,w:1050,h:200,type:"ground"});
+  platforms.push({x:460,y:groundY-110,w:170,h:18,type:"platform"});
+  enemies.push({x:350,y:groundY-32,w:28,h:32,alive:true});
+  coinList.push({x:364,y:groundY-95,r:9,taken:false});
+  coinList.push({x:545,y:groundY-145,r:9,taken:false});
+  coinList.push({x:780,y:groundY-30,r:9,taken:false});
+ }else if(level===3){
+  worldLength=1500;
+  goalX=1180;
+  platforms.push({x:0,y:groundY,w:260,h:200,type:"ground"});
+  platforms.push({x:330,y:groundY-65,w:140,h:18,type:"platform"});
+  platforms.push({x:550,y:groundY-130,w:140,h:18,type:"platform"});
+  platforms.push({x:770,y:groundY-195,w:140,h:18,type:"platform"});
+  platforms.push({x:980,y:groundY-195,w:260,h:18,type:"platform"});
+  coinList.push({x:400,y:groundY-100,r:9,taken:false});
+  coinList.push({x:620,y:groundY-165,r:9,taken:false});
+  coinList.push({x:840,y:groundY-230,r:9,taken:false});
+ }else{
+  worldLength=1200+level*150;
+  goalX=worldLength-180;
+  let x=0;
+  while(x<goalX+120){
+   let w=240;
+   platforms.push({x:x,y:groundY,w:w,h:200,type:"ground"});
+   if(x>200 && Math.random()<0.5){
+    enemies.push({x:x+110,y:groundY-32,w:28,h:32,alive:true});
+   }
+   coinList.push({x:x+120,y:groundY-85,r:9,taken:false});
+   x+=w+85;
+  }
+ }
+}
+
+function generateLevel(){
+ platforms=[];
+ enemies=[];
+ coinList=[];
+
+ worldLength=4200+level*450;
+ goalX=worldLength-120;
+
+ let x=0;
+ while(x<worldLength){
+  let width=rand(300,480);
+  platforms.push({x:x,y:groundY,w:width,h:100,type:"ground"});
+  x+=width;
+  if(x<worldLength-250){
+   x+=rand(30,Math.min(75+level*8,140));
+  }
+ }
+
+ for(let i=0;i<18+level*3;i++){
+  let px=rand(150,worldLength-250);
+  let py=rand(groundY-240,groundY-110);
+  let pw=rand(90,160);
+  platforms.push({x:px,y:py,w:pw,h:18,type:"platform"});
+
+  for(let j=0;j<3;j++){
+   coinList.push({x:px+25+j*35,y:py-35,r:9,taken:false});
+  }
+ }
+
+ for(let i=0;i<40;i++){
+  coinList.push({
+   x:rand(100,worldLength-180),
+   y:groundY-rand(75,150),
+   r:9,
+   taken:false
+  });
+ }
+
+ for(let p of platforms){
+  if(p.type!=="ground"||p.w<150)continue;
+  if(Math.random()<.55){
+   enemies.push({
+    x:p.x+rand(70,p.w-70),
+    y:groundY-32,
+    w:28,
+    h:32,
+    alive:true
+   });
+  }
+ }
+}
+
+function jump(){
+ if(!running||paused)return;
+ if(player.grounded){
+  player.vy=-13;
+  player.grounded=false;
+  player.jumps=1;
+ }else if(player.jumps<2){
+  player.vy=-11;
+  player.jumps=2;
+ }
+}
+
+function syncSavedBlocks(){
+ saveData.savedBlocks = programBlocks;
+ saveProgress();
+}
+
+function loadStarterBlocks(){
+ programBlocks=[
+  {id:blockIdCounter++,type:"right",val:0.8},
+  {
+   id:blockIdCounter++,type:"all",
+   children:[
+    {id:blockIdCounter++,type:"right",val:0.7},
+    {id:blockIdCounter++,type:"jump",val:1}
+   ]
+  },
+  {id:blockIdCounter++,type:"right",val:1.0}
+ ];
+ syncSavedBlocks();
+}
+
+function addBlock(type){
+ if(codeRunning) stopCodeExecution();
+ const blk={id:blockIdCounter++,type};
+ if(type==="right"||type==="left") blk.val=0.8;
+ if(type==="wait") blk.val=0.5;
+ if(type==="jump") blk.val=1;
+ if(type==="loop"){ blk.val=2; blk.children=[]; }
+ if(type==="all"){ blk.children=[]; }
+ programBlocks.push(blk);
+ syncSavedBlocks();
+ renderBlocks();
+}
+
+function addChildBlock(parentId,type){
+ if(codeRunning) stopCodeExecution();
+ const parent=programBlocks.find(b=>b.id===parentId);
+ if(!parent||!parent.children) return;
+ const child={id:blockIdCounter++,type};
+ if(type==="right"||type==="left") child.val=0.7;
+ if(type==="wait") child.val=0.4;
+ if(type==="jump") child.val=1;
+ parent.children.push(child);
+ syncSavedBlocks();
+ renderBlocks();
+}
+
+function removeBlock(id,parentId=null){
+ if(codeRunning) stopCodeExecution();
+ if(parentId){
+  const p=programBlocks.find(b=>b.id===parentId);
+  if(p) p.children=p.children.filter(c=>c.id!==id);
+ }else{
+  programBlocks=programBlocks.filter(b=>b.id!==id);
+ }
+ syncSavedBlocks();
+ renderBlocks();
+}
+
+function moveBlock(idx,dir){
+ if(codeRunning) stopCodeExecution();
+ const target=idx+dir;
+ if(target<0||target>=programBlocks.length) return;
+ const tmp=programBlocks[idx];
+ programBlocks[idx]=programBlocks[target];
+ programBlocks[target]=tmp;
+ syncSavedBlocks();
+ renderBlocks();
+}
+
+function updateBlockVal(id,newVal,parentId=null){
+ const v=Math.max(0.1,Math.min(20,parseFloat(newVal)||0.1));
+ if(parentId){
+  const p=programBlocks.find(b=>b.id===parentId);
+  const c=p&&p.children.find(ch=>ch.id===id);
+  if(c) c.val=v;
+ }else{
+  const b=programBlocks.find(bl=>bl.id===id);
+  if(b) b.val=v;
+ }
+ syncSavedBlocks();
+}
+
+function clearBlocks(){
+ stopCodeExecution();
+ programBlocks=[];
+ syncSavedBlocks();
+ renderBlocks();
+}
+
+function blockStyleClass(type){
+ if(type==="right"||type==="left") return "b-move";
+ if(type==="jump") return "b-jump";
+ if(type==="wait") return "b-wait";
+ if(type==="loop") return "b-loop";
+ if(type==="all") return "b-all";
+ return "";
+}
+
+function blockLabel(b,parentId=null){
+ const pidArg=parentId?`,${parentId}`:"";
+ if(b.type==="right") return `➡ Move Right <input type="number" step="0.1" value="${b.val}" onchange="updateBlockVal(${b.id},this.value${pidArg})">s`;
+ if(b.type==="left") return `⬅ Move Left <input type="number" step="0.1" value="${b.val}" onchange="updateBlockVal(${b.id},this.value${pidArg})">s`;
+ if(b.type==="jump") return `⬆ Jump`;
+ if(b.type==="wait") return `⏳ Wait <input type="number" step="0.1" value="${b.val}" onchange="updateBlockVal(${b.id},this.value${pidArg})">s`;
+ if(b.type==="loop") return `🔁 Repeat <input type="number" step="1" min="1" max="20" value="${b.val}" onchange="updateBlockVal(${b.id},this.value)">x`;
+ if(b.type==="all") return `⚡ All At Once`;
+ return "";
+}
+
+function renderBlocks(){
+ workspace.innerHTML=`<div class="hatBlock">🚩 WHEN RUN CLICKED</div>`;
+ programBlocks.forEach((b,idx)=>{
+  const div=document.createElement("div");
+  div.className=`codeBlock ${blockStyleClass(b.type)} ${activeBlockIds.has(b.id)?"active":""}`;
+
+  let inner=`
+   <div class="blockRow">
+    <div>${blockLabel(b)}</div>
+    <div class="miniBtns">
+     <button class="miniBtn" onclick="moveBlock(${idx},-1)">▲</button>
+     <button class="miniBtn" onclick="moveBlock(${idx},1)">▼</button>
+     <button class="miniBtn" onclick="removeBlock(${b.id})">✕</button>
+    </div>
+   </div>`;
+
+  if(b.type==="loop"||b.type==="all"){
+   inner+=`<div class="containerBody">`;
+   (b.children||[]).forEach(c=>{
+    inner+=`
+     <div class="codeBlock ${blockStyleClass(c.type)} ${activeBlockIds.has(c.id)?"active":""}">
+      <div class="blockRow">
+       <div>${blockLabel(c,b.id)}</div>
+       <button class="miniBtn" onclick="removeBlock(${c.id},${b.id})">✕</button>
+      </div>
+     </div>`;
+   });
+   inner+=`
+    <div class="addChildRow">
+     <button class="addChildBtn" onclick="addChildBlock(${b.id},'right')">+Right</button>
+     <button class="addChildBtn" onclick="addChildBlock(${b.id},'left')">+Left</button>
+     <button class="addChildBtn" onclick="addChildBlock(${b.id},'jump')">+Jump</button>
+     <button class="addChildBtn" onclick="addChildBlock(${b.id},'wait')">+Wait</button>
+    </div>
+   `;
+  }
+
+  div.innerHTML=inner;
+  workspace.appendChild(div);
+ });
+}
+
+function compileProgram(blocks){
+ const steps=[];
+ for(const b of blocks){
+  if(b.type==="loop"){
+   const count=Math.max(1,Math.floor(b.val||1));
+   for(let i=0;i<count;i++){
+    steps.push(...compileProgram(b.children||[]));
+   }
+  }else if(b.type==="all"){
+   const kids=(b.children||[]).map(c=>({
+    id:c.id,
+    type:c.type,
+    duration:c.type==="jump"?0.12:(c.val||0.5),
+    jumped:false
+   }));
+   if(kids.length>0){
+    steps.push({isParallel:true,parentId:b.id,tasks:kids});
+   }
+  }else{
+   steps.push({
+    isParallel:false,
+    tasks:[{
+     id:b.id,
+     type:b.type,
+     duration:b.type==="jump"?0.12:(b.val||0.5),
+     jumped:false
+    }]
+   });
+  }
+ }
+ return steps;
+}
+
+function startCodeExecution(){
+ if(mode!=="coding") return;
+ generateCodingLevel();
+ resetPlayer();
+ coins=saveData.totalCoins;
+ score=0;
+ keys.left=false;
+ keys.right=false;
+
+ execQueue=compileProgram(programBlocks);
+ currentTask=null;
+ activeBlockIds.clear();
+ codeRunning=true;
+ document.getElementById("runCodeBtn").textContent="⏳ RUNNING";
+ renderBlocks();
+}
+
+function stopCodeExecution(shouldReset=true){
+ codeRunning=false;
+ execQueue=[];
+ currentTask=null;
+ activeBlockIds.clear();
+ keys.left=false;
+ keys.right=false;
+ const btn=document.getElementById("runCodeBtn");
+ if(btn) btn.textContent="▶ RUN";
+ if(mode==="coding"&&shouldReset){
+  generateCodingLevel();
+  resetPlayer();
+  renderBlocks();
+ }
+}
+
+function stepCodeEngine(dt){
+ if(!codeRunning) return;
+
+ if(!currentTask){
+  if(execQueue.length===0){
+   codeRunning=false;
+   keys.left=false;
+   keys.right=false;
+   activeBlockIds.clear();
+   document.getElementById("runCodeBtn").textContent="▶ RUN";
+   renderBlocks();
+   return;
+  }
+  currentTask=execQueue.shift();
+  currentTask.elapsed=0;
+  activeBlockIds.clear();
+  if(currentTask.parentId) activeBlockIds.add(currentTask.parentId);
+  currentTask.tasks.forEach(t=>activeBlockIds.add(t.id));
+  renderBlocks();
+ }
+
+ currentTask.elapsed+=dt;
+ keys.left=false;
+ keys.right=false;
+
+ let anyStillRunning=false;
+
+ for(const t of currentTask.tasks){
+  if(currentTask.elapsed<=t.duration){
+   anyStillRunning=true;
+   if(t.type==="right") keys.right=true;
+   if(t.type==="left") keys.left=true;
+   if(t.type==="jump" && !t.jumped){
+    jump();
+    t.jumped=true;
+   }
+  }
+ }
+
+ if(!anyStillRunning){
+  currentTask=null;
+ }
+}
+
+function gameOver(){
+ if(!running)return;
+
+ saveData.totalCoins = coins;
+ saveProgress();
+
+ if(mode==="coding"){
+  particle(player.x+15,player.y+20,"#ff4785");
+  stopCodeExecution(true);
+  return;
+ }
+
+ running=false;
+ controls.style.display="none";
+ hud.style.display="none";
+ document.getElementById("pause").style.display="none";
+ menu.style.display="flex";
+
+ if(mode==="forever"){
+  if(Math.floor(score)>saveData.bestRun){
+   saveData.bestRun=Math.floor(score);
+   saveProgress();
+  }
+
+  panel.innerHTML=`
+   <h1>GAME OVER</h1>
+   <h2>FOREVER MODE</h2>
+   <p>Score: ${Math.floor(score)}</p>
+   <p>Total Coins: ${coins}</p>
+   <p>Best: ${saveData.bestRun}</p>
+   <div class="menuBtns">
+    <button onclick="startGame('forever')">TRY AGAIN</button>
+    <button onclick="mainMenu()">MAIN MENU</button>
+   </div>`;
+ }else{
+  panel.innerHTML=`
+   <h1>GAME OVER</h1>
+   <p>You touched an enemy or fell!</p>
+   <p>Level: ${level}</p>
+   <p>Score: ${Math.floor(score)}</p>
+   <div class="menuBtns">
+    <button onclick="retryLevel()">RETRY LEVEL</button>
+    <button onclick="mainMenu()">MAIN MENU</button>
+   </div>`;
+ }
+}
+
+function retryLevel(){
+ startGame("platformer", level);
+}
+
+function levelComplete(){
+ if(!running)return;
+
+ const clearedMode=mode;
+ const nextLvl = level + 1;
+
+ saveData.totalCoins = coins;
+ if(clearedMode==="platformer" && nextLvl > saveData.platformerLevel){
+  saveData.platformerLevel = nextLvl;
+ }
+ if(clearedMode==="coding" && nextLvl > saveData.codingLevel){
+  saveData.codingLevel = nextLvl;
+ }
+ saveProgress();
+
+ stopCodeExecution(false);
+ running=false;
+ controls.style.display="none";
+ hud.style.display="none";
+ document.getElementById("pause").style.display="none";
+ codeEditor.style.display="none";
+ menu.style.display="flex";
+
+ panel.innerHTML=`
+  <h1>LEVEL COMPLETE!</h1>
+  <h2>🏁 STAGE ${level} SAVED!</h2>
+  <p>Score: ${Math.floor(score)}</p>
+  <p>Total Coins: ${coins}</p>
+  <div class="menuBtns">
+   <button onclick="startGame('${clearedMode}', ${nextLvl})">NEXT STAGE (${nextLvl}) ▶</button>
+   <button onclick="mainMenu()">MAIN MENU</button>
+  </div>`;
+}
+
+function mainMenu(){
+ stopCodeExecution(false);
+ running=false;
+ paused=false;
+ mode="menu";
+ menu.style.display="flex";
+ hud.style.display="none";
+ controls.style.display="none";
+ codeEditor.style.display="none";
+ document.getElementById("pause").style.display="none";
+
+ const pLvl = saveData.platformerLevel || 1;
+ const cLvl = saveData.codingLevel || 1;
+
+ panel.innerHTML=`
+  <h1>PIXEL RUSH</h1>
+  <p>COINS: ${saveData.totalCoins} &bull; BEST: ${saveData.bestRun}</p>
+  <div class="menuBtns">
+   <button onclick="startGame('platformer', ${pLvl})">PLATFORMER (LVL ${pLvl})</button>
+   <button onclick="startGame('forever')">FOREVER MODE</button>
+   <button style="background:#00b894;box-shadow:0 5px 0 #00624f" onclick="startGame('coding', ${cLvl})">BLOCK CODING (STAGE ${cLvl})</button>
+   <button style="background:#ff0033;box-shadow:0 5px 0 #99001f" onclick="window.open('https://youtube.com/@joshualim-67k-h13?si=EME1VSLuw14yHGFg', '_blank')">▶ MY YOUTUBE CHANNEL</button>
+  </div>
+  <p class="small" style="margin-top:14px">
+   Progress &amp; code blocks auto-save!
+  </p>
+  <button style="font-size:12px;padding:6px 12px;background:#ff4757;box-shadow:0 3px 0 #8a1c26;margin-top:4px" onclick="resetAllSaveData()">RESET SAVE</button>`;
+}
+
+function togglePause(){
+ if(!running)return;
+ paused=!paused;
+ document.getElementById("pause").textContent=paused?"▶":"Ⅱ";
+}
+document.getElementById("pause").onclick=togglePause;
+
+document.addEventListener("keydown",e=>{
+ if(mode==="coding")return;
+ if(e.code==="Escape")togglePause();
+
+ if(["Space","ArrowUp","KeyW"].includes(e.code)){
+  e.preventDefault();
+  if(!e.repeat)jump();
+ }
+
+ if(e.code==="ArrowLeft"||e.code==="KeyA")keys.left=true;
+ if(e.code==="ArrowRight"||e.code==="KeyD")keys.right=true;
+});
+
+document.addEventListener("keyup",e=>{
+ if(mode==="coding")return;
+ if(e.code==="ArrowLeft"||e.code==="KeyA")keys.left=false;
+ if(e.code==="ArrowRight"||e.code==="KeyD")keys.right=false;
+});
+
+function holdButton(id,prop){
+ const b=document.getElementById(id);
+
+ b.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  keys[prop]=true;
+  b.setPointerCapture(e.pointerId);
+ });
+
+ b.addEventListener("pointerup",()=>keys[prop]=false);
+ b.addEventListener("pointercancel",()=>keys[prop]=false);
+}
+holdButton("leftBtn","left");
+holdButton("rightBtn","right");
+
+document.getElementById("jumpBtn").addEventListener("pointerdown",e=>{
+ e.preventDefault();
+ jump();
+});
+
+function hit(a,b){
+ return a.x<b.x+b.w&&
+ a.x+a.w>b.x&&
+ a.y<b.y+b.h&&
+ a.y+a.h>b.y;
+}
+
+function particle(x,y,color){
+ for(let i=0;i<8;i++){
+  particles.push({
+   x,y,
+   vx:rand(-3,3),
+   vy:rand(-4,2),
+   life:30,
+   color
+  });
+ }
+}
+
+function updateParticles(){
+ for(let p of particles){
+  p.x+=p.vx;
+  p.y+=p.vy;
+  p.vy+=.15;
+  p.life--;
+ }
+ particles=particles.filter(p=>p.life>0);
+}
+
+function updatePlatformer(){
+ if(mode==="coding"){
+  stepCodeEngine(1/60);
+ }
+
+ if(keys.left){
+  player.vx-=.7;
+ }
+ if(keys.right){
+  player.vx+=.7;
+ }
+
+ if(!keys.left&&!keys.right){
+  player.vx*=.82;
+ }
+
+ player.vx=Math.max(-6,Math.min(6,player.vx));
+ player.x=Math.max(0,player.x+player.vx);
+
+ let oldBottom=player.y+player.h;
+ player.vy+=.65;
+ player.y+=player.vy;
+
+ player.grounded=false;
+
+ if(player.vy>=0){
+  for(let p of platforms){
+   let overlapsX=
+    player.x+player.w>p.x&&player.x<p.x+p.w;
+
+   let crossesTop=
+    oldBottom<=p.y+3&&
+    player.y+player.h>=p.y;
+
+   if(overlapsX&&crossesTop){
+    player.y=p.y-player.h;
+    player.vy=0;
+    player.grounded=true;
+    player.jumps=0;
+    break;
+   }
+  }
+ }
+
+ for(let e of enemies){
+  if(!e.alive)continue;
+  if(hit(player,e)){
+   gameOver();
+   return;
+  }
+ }
+
+ for(let c of coinList){
+  if(c.taken)continue;
+  let box={x:c.x-c.r,y:c.y-c.r,w:c.r*2,h:c.r*2};
+  if(hit(player,box)){
+   c.taken=true;
+   coins++;
+   saveData.totalCoins = coins;
+   saveProgress();
+   score+=50;
+   particle(c.x,c.y,"#ffdc40");
+  }
+ }
+
+ if(player.y>H+60){
+  gameOver();
+  return;
+ }
+
+ let viewW=(mode==="coding"&&W>650)?W-360:W;
+ cameraX=Math.max(0,player.x-viewW*.35);
+ cameraX=Math.min(cameraX,Math.max(0,worldLength-viewW));
+
+ if(player.x+player.w>=goalX){
+  score+=level*500;
+  levelComplete();
+  return;
+ }
+
+ if(mode==="platformer") score+=.1;
+}
+
+function spawnRunner(){
+ let r=Math.random();
+
+ if(r<.45){
+  obstacles.push({x:W+40,y:groundY-35,w:32,h:35,type:"block"});
+ }else if(r<.7){
+  obstacles.push({x:W+40,y:groundY-42,w:36,h:42,type:"enemy"});
+ }else{
+  obstacles.push({x:W+40,y:groundY,w:rand(100,160),h:60,type:"gap"});
+ }
+
+ if(Math.random()<.8){
+  let cy=groundY-rand(90,190);
+  for(let i=0;i<5;i++){
+   coinList.push({x:W+110+i*35,y:cy,r:9,taken:false});
+  }
+ }
+}
+
+function updateForever(){
+ speed=Math.min(13,6+score/1500);
+
+ player.vy+=.65;
+ player.y+=player.vy;
+
+ if(player.y+player.h>=groundY){
+  player.y=groundY-player.h;
+  player.vy=0;
+  player.grounded=true;
+  player.jumps=0;
+ }else{
+  player.grounded=false;
+ }
+
+ if(frame%Math.max(40,Math.floor(95-speed*4))===0){
+  spawnRunner();
+ }
+
+ for(let o of obstacles){
+  o.x-=speed;
+
+  if(o.type==="gap"){
+   if(player.x+player.w>o.x&&
+      player.x<o.x+o.w&&
+      player.y+player.h>=groundY){
+    gameOver();
+    return;
+   }
+  }else if(hit(player,o)){
+   gameOver();
+   return;
+  }
+ }
+
+ obstacles=obstacles.filter(o=>o.x+o.w>-50);
+
+ for(let c of coinList){
+  c.x-=speed;
+  if(!c.taken&&hit(player,{x:c.x-c.r,y:c.y-c.r,w:c.r*2,h:c.r*2})){
+   c.taken=true;
+   coins++;
+   saveData.totalCoins = coins;
+   saveProgress();
+   score+=50;
+   particle(c.x,c.y,"#ffdc40");
+  }
+ }
+
+ coinList=coinList.filter(c=>c.x>-50&&!c.taken);
+ score++;
+}
+
+function updateClouds(){
+ for(let c of clouds){
+  c.x-=mode==="forever"?speed*.12:1;
+  if(c.x+c.s<0)c.x=W+c.s;
+ }
+}
+
+function update(){
+ if(!running||paused)return;
+
+ frame++;
+
+ if(mode==="platformer"||mode==="coding"){
+  updatePlatformer();
+ }else{
+  updateForever();
+ }
+
+ updateClouds();
+ updateParticles();
+
+ document.getElementById("score").textContent=Math.floor(score);
+ document.getElementById("coins").textContent=coins;
+ document.getElementById("levelDisplay").textContent=
+  (mode==="platformer"||mode==="coding")?level:"∞";
+ document.getElementById("best").textContent=saveData.bestRun;
+}
+
+function drawBackground(){
+ let g=ctx.createLinearGradient(0,0,0,H);
+ g.addColorStop(0,"#111b43");
+ g.addColorStop(1,"#482366");
+ ctx.fillStyle=g;
+ ctx.fillRect(0,0,W,H);
+
+ for(let i=0;i<75;i++){
+  let x=(i*137+frame*.12)%W;
+  let y=(i*89)%(groundY*.75);
+  ctx.fillStyle="#ffffff88";
+  ctx.fillRect(x,y,2,2);
+ }
+
+ ctx.fillStyle="#fff2a0";
+ ctx.beginPath();
+ ctx.arc(W*.72,groundY*.22,28,0,Math.PI*2);
+ ctx.fill();
+
+ ctx.fillStyle="#9ab5ff22";
+ for(let c of clouds){
+  ctx.fillRect(c.x,c.y,c.s,10);
+  ctx.fillRect(c.x+10,c.y-8,c.s*.5,20);
+ }
+
+ ctx.fillStyle="#242e59";
+ for(let i=0;i<10;i++){
+  let movement=(mode==="platformer"||mode==="coding")?cameraX*.2:frame*1;
+  let x=(i*180-movement)%(W+180);
+  if(x< -180)x+=W+180;
+
+  ctx.beginPath();
+  ctx.moveTo(x,groundY);
+  ctx.lineTo(x+90,groundY-140);
+  ctx.lineTo(x+180,groundY);
+  ctx.fill();
+ }
+}
+
+function drawPlayer(){
+ let x=player.x-cameraX;
+ let y=player.y;
+
+ ctx.fillStyle="#7545ff";
+ ctx.fillRect(x+5,y+10,22,26);
+
+ ctx.fillStyle="#55edff";
+ ctx.fillRect(x,y,30,22);
+
+ ctx.fillStyle="#10152d";
+ ctx.fillRect(x+7,y+7,5,6);
+ ctx.fillRect(x+19,y+7,5,6);
+
+ ctx.fillStyle="white";
+ ctx.fillRect(x+11,y+16,9,3);
+
+ ctx.fillStyle="#ff69ce";
+ let leg=player.grounded?Math.sin(frame*.4)*5:0;
+ ctx.fillRect(x+6,y+32,7,9+leg);
+ ctx.fillRect(x+19,y+32,7,9-leg);
+}
+
+function drawPlatforms(){
+ for(let p of platforms){
+  let x=p.x-cameraX;
+  if(x+p.w<-10||x>W+10)continue;
+
+  if(p.type==="ground"){
+   ctx.fillStyle="#202a48";
+   ctx.fillRect(x,p.y,p.w,p.h);
+   ctx.fillStyle="#4af4d9";
+   ctx.fillRect(x,p.y,p.w,5);
+  }else{
+   ctx.fillStyle="#7545ff";
+   ctx.fillRect(x,p.y,p.w,p.h);
+   ctx.fillStyle="#b39aff";
+   ctx.fillRect(x,p.y,p.w,4);
+  }
+ }
+}
+
+function drawRunnerGround(){
+ ctx.fillStyle="#202a48";
+ ctx.fillRect(0,groundY,W,H-groundY);
+
+ ctx.fillStyle="#4af4d9";
+ ctx.fillRect(0,groundY,W,5);
+
+ for(let i=0;i<W/40+2;i++){
+  let x=(i*40-frame*speed)%W;
+  ctx.fillStyle="#34446b";
+  ctx.fillRect(x,groundY+25,20,4);
+ }
+}
+
+function drawEnemies(){
+ for(let e of enemies){
+  if(!e.alive)continue;
+  let x=e.x-cameraX;
+
+  ctx.fillStyle="#ffb83d";
+  ctx.fillRect(x,e.y+8,e.w,e.h-8);
+
+  ctx.fillStyle="#ffe07a";
+  ctx.fillRect(x+5,e.y,e.w-10,12);
+
+  ctx.fillStyle="#10152d";
+  ctx.fillRect(x+7,e.y+17,6,6);
+  ctx.fillRect(x+19,e.y+17,6,6);
+ }
+}
+
+function drawObstacles(){
+ for(let o of obstacles){
+  if(o.type==="gap"){
+   ctx.fillStyle="#080c1a";
+   ctx.fillRect(o.x,groundY,o.w,H-groundY);
+
+   ctx.fillStyle="#ff4785";
+   ctx.fillRect(o.x,groundY,o.w,5);
+  }else if(o.type==="block"){
+   ctx.fillStyle="#ff4785";
+   ctx.fillRect(o.x,o.y,o.w,o.h);
+
+   ctx.fillStyle="#ffb0c8";
+   ctx.fillRect(o.x+5,o.y+5,o.w-10,6);
+  }else{
+   ctx.fillStyle="#ffb83d";
+   ctx.fillRect(o.x,o.y+8,o.w,o.h-8);
+
+   ctx.fillStyle="#ffe07a";
+   ctx.fillRect(o.x+5,o.y,o.w-10,12);
+
+   ctx.fillStyle="#10152d";
+   ctx.fillRect(o.x+7,o.y+17,6,6);
+   ctx.fillRect(o.x+23,o.y+17,6,6);
+  }
+ }
+}
+
+function drawCoins(){
+ for(let c of coinList){
+  if(c.taken)continue;
+  let x=c.x-cameraX;
+
+  ctx.fillStyle="#ffce3c";
+  ctx.beginPath();
+  ctx.arc(x,c.y,c.r,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle="#fff2a0";
+  ctx.fillRect(x-2,c.y-5,4,10);
+ }
+}
+
+function drawGoal(){
+ if(mode!=="platformer"&&mode!=="coding")return;
+
+ let x=goalX-cameraX;
+ if(x<-100||x>W+100)return;
+
+ ctx.fillStyle="white";
+ ctx.fillRect(x,groundY-155,8,155);
+
+ let size=16;
+ for(let row=0;row<4;row++){
+  for(let col=0;col<5;col++){
+   ctx.fillStyle=(row+col)%2===0?"white":"#111111";
+   ctx.fillRect(x+8+col*size,groundY-155+row*size,size,size);
+  }
+ }
+
+ ctx.fillStyle="#55eeff";
+ ctx.font="bold 18px monospace";
+ ctx.fillText("FINISH",x-25,groundY-170);
+}
+
+function drawParticles(){
+ for(let p of particles){
+  ctx.globalAlpha=Math.max(0,p.life/30);
+  ctx.fillStyle=p.color;
+  ctx.fillRect(p.x-cameraX,p.y,5,5);
+ }
+ ctx.globalAlpha=1;
+}
+
+function draw(){
+ drawBackground();
+
+ if(mode==="platformer"||mode==="coding"){
+  drawPlatforms();
+  drawEnemies();
+  drawGoal();
+ }else{
+  drawRunnerGround();
+  drawObstacles();
+ }
+
+ drawCoins();
+
+ if(player)drawPlayer();
+
+ drawParticles();
+
+ if(paused){
+  ctx.fillStyle="#0009";
+  ctx.fillRect(0,0,W,H);
+
+  ctx.fillStyle="white";
+  ctx.textAlign="center";
+  ctx.font="bold 40px monospace";
+  ctx.fillText("PAUSED",W/2,H/2);
+  ctx.textAlign="left";
+ }
+}
+
+function loop(){
+ update();
+ draw();
+ requestAnimationFrame(loop);
+}
+
+resetPlayer();
+mainMenu();
+loop();
+</script>
+</body>
+</html>
