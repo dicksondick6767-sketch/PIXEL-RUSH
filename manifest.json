@@ -1,0 +1,21 @@
+{
+  "name": "Pixel Rush",
+  "short_name": "PixelRush",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#080c1a",
+  "theme_color": "#7045ff",
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
